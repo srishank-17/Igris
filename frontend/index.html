@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<button onclick="startListening()">Speak</button>
+<p id="output">Waiting...</p>
+
+<script>
+const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+
+function startListening() {
+    recognition.start();
+}
+
+recognition.onresult = function(event) {
+    const text = event.results[0][0].transcript;
+    document.getElementById("output").innerText = "You said: " + text;
+
+    fetch("http://127.0.0.1:9000/assistant?query=" + text)
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById("output").innerText = "Assistant: " + data.response;
+
+        // Voice reply
+        const speech = new SpeechSynthesisUtterance(data.response);
+        speech.lang = "en-US";
+        speechSynthesis.speak(speech);
+    })
+    .catch(error => {
+        document.getElementById("output").innerText = "Error: " + error;
+        console.log(error);
+    });
+};
+</script>
+
+</body>
+</html>
+
+
